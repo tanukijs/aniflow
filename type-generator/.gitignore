@@ -12,7 +12,5 @@
 #!.yarn/cache
 .pnp.*
 
-node_modules
-
-# Codegen output (reproducible from the AniList GraphQL schema)
-/src/graphql.ts
+# Codegen output (reproducible via `yarn generate`)
+src/generated/
