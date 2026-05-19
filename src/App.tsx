@@ -890,7 +890,7 @@ export default function App() {
             type="button"
             className="flex-1 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-blue-500 disabled:opacity-50"
             disabled={loading}
-            onClick={() => loadData(false)}
+            onClick={() => void loadData(false)}
           >
             Load
           </button>
@@ -898,7 +898,7 @@ export default function App() {
             type="button"
             className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50"
             disabled={loading}
-            onClick={() => loadData(true)}
+            onClick={() => void loadData(true)}
             title="Forcer le rechargement (ignore le cache local)"
           >
             Force
