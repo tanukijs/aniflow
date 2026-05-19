@@ -1,18 +1,19 @@
 import dagre, { type NodeConfig } from '@dagrejs/dagre'
 import { gql, request } from 'graphql-request'
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import ReactFlow, {
+import {
   Background,
   Controls,
   Handle,
   MiniMap,
   Position,
+  ReactFlow,
   type Edge,
   type Node,
   type NodeProps,
   type ReactFlowInstance,
-} from 'reactflow'
-import 'reactflow/dist/style.css'
+} from '@xyflow/react'
+import '@xyflow/react/dist/style.css'
 import {
   type MediaEdge,
   MediaFormat,
@@ -29,7 +30,7 @@ interface Visibility {
   status: MediaStatus[]
 }
 
-interface AnimeNodeData {
+type AnimeNodeData = {
   title: string
   cover?: string
   coverColor?: string
@@ -37,7 +38,9 @@ interface AnimeNodeData {
   format?: MediaFormat | null
   status?: MediaStatus | null
   seen: boolean
-}
+} & Record<string, unknown>
+
+type AnimeFlowNode = Node<AnimeNodeData, 'anime'>
 
 const endpoint = 'https://graphql.anilist.co'
 
@@ -278,7 +281,7 @@ function toggle<T>(arr: T[], value: T): T[] {
   return arr.includes(value) ? arr.filter((v) => v !== value) : [...arr, value]
 }
 
-function AnimeNode({ data }: NodeProps<AnimeNodeData>) {
+function AnimeNode({ data }: NodeProps<AnimeFlowNode>) {
   return (
     <div
       className={`flex h-[124px] w-[240px] overflow-hidden rounded-md border bg-white shadow-sm transition-shadow hover:shadow-md ${
@@ -468,7 +471,7 @@ function buildGraph(
   seenIds: Set<number>,
   visibility: Visibility,
   hideCompleteFranchises: boolean,
-): { nodes: Node<AnimeNodeData>[]; edges: Edge[]; franchises: Franchise[] } {
+): { nodes: AnimeFlowNode[]; edges: Edge[]; franchises: Franchise[] } {
   const nodeData = new Map<number, AnimeNodeData>()
   const edges: Edge[] = []
   const edgeKeys = new Set<string>()
@@ -726,7 +729,7 @@ function buildGraph(
     cursorY += maxY - minY + componentGap
   }
 
-  const nodes: Node<AnimeNodeData>[] = []
+  const nodes: AnimeFlowNode[] = []
   for (const [id, data] of nodeData) {
     const position = nodePositions.get(id)
     if (!position) continue
@@ -884,7 +887,7 @@ export default function App() {
     return ids
   }, [collection])
 
-  const flowRef = useRef<ReactFlowInstance | null>(null)
+  const flowRef = useRef<ReactFlowInstance<AnimeFlowNode> | null>(null)
 
   const { nodes, edges, franchises } = useMemo(() => {
     if (!collection) return { nodes: [], edges: [], franchises: [] as Franchise[] }
@@ -894,14 +897,14 @@ export default function App() {
   const focusNode = useCallback((id: string) => {
     const inst = flowRef.current
     if (!inst) return
-    inst.fitView({ nodes: [{ id }], maxZoom: 1.5, duration: 500, padding: 0.4 })
+    void inst.fitView({ nodes: [{ id }], maxZoom: 1.5, duration: 500, padding: 0.4 })
   }, [])
 
   useEffect(() => {
     if (!flowRef.current || nodes.length === 0) return
     // Defer so React Flow has applied the new nodes before fitting.
     const id = requestAnimationFrame(() => {
-      flowRef.current?.fitView({ maxZoom: 1.5, padding: 0.2, duration: 300 })
+      void flowRef.current?.fitView({ maxZoom: 1.5, padding: 0.2, duration: 300 })
     })
     return () => { cancelAnimationFrame(id); }
   }, [nodes])
