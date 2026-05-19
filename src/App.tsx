@@ -532,7 +532,8 @@ function buildGraph(
   const visitedForBfs = new Set<number>(nodeData.keys())
   const queue: number[] = [...nodeData.keys()]
   while (queue.length) {
-    const id = queue.shift()!
+    const id = queue.shift()
+    if (id === undefined) break
     const m = mediaById.get(id)
     if (!m) continue
     // Upgrade the (possibly shallow) entry with full data we now have.
@@ -619,8 +620,10 @@ function buildGraph(
   const adj = new Map<number, Set<number>>()
   for (const id of nodeData.keys()) adj.set(id, new Set())
   for (const e of edges) {
-    adj.get(Number(e.source))!.add(Number(e.target))
-    adj.get(Number(e.target))!.add(Number(e.source))
+    const src = Number(e.source)
+    const tgt = Number(e.target)
+    adj.get(src)?.add(tgt)
+    adj.get(tgt)?.add(src)
   }
 
   const visited = new Set<number>()
@@ -631,7 +634,8 @@ function buildGraph(
     const queue = [id]
     visited.add(id)
     while (queue.length) {
-      const cur = queue.shift()!
+      const cur = queue.shift()
+      if (cur === undefined) break
       comp.push(cur)
       for (const nb of adj.get(cur) ?? []) {
         if (!visited.has(nb)) {
@@ -650,7 +654,9 @@ function buildGraph(
   // in to declutter "completed" chains given their current filters.
   let activeComponents = components
   if (hideCompleteFranchises) {
-    activeComponents = components.filter((comp) => comp.some((id) => !nodeData.get(id)!.seen))
+    activeComponents = components.filter((comp) =>
+      comp.some((id) => nodeData.get(id)?.seen === false),
+    )
     const keptIds = new Set<number>()
     for (const comp of activeComponents) for (const id of comp) keptIds.add(id)
     for (const id of [...nodeData.keys()]) {
@@ -709,10 +715,12 @@ function buildGraph(
 
   const nodes: Node<AnimeNodeData>[] = []
   for (const [id, data] of nodeData) {
+    const position = nodePositions.get(id)
+    if (!position) continue
     nodes.push({
       id: String(id),
       type: 'anime',
-      position: nodePositions.get(id)!,
+      position,
       data,
       sourcePosition: Position.Right,
       targetPosition: Position.Left,
@@ -742,8 +750,9 @@ function buildGraph(
   const franchises: Franchise[] = activeComponents
     .map((comp) => {
       const baseId = comp.slice().sort((a, b) => {
-        const da = nodeData.get(a)!
-        const db = nodeData.get(b)!
+        const da = nodeData.get(a)
+        const db = nodeData.get(b)
+        if (!da || !db) return 0
         const fa = rankFormat(da.format)
         const fb = rankFormat(db.format)
         if (fa !== fb) return fa - fb
@@ -752,8 +761,12 @@ function buildGraph(
         if (ra !== rb) return ra - rb
         return da.title.localeCompare(db.title)
       })[0]
-      const base = nodeData.get(baseId)!
-      const unseenCount = comp.reduce((n, id) => n + (nodeData.get(id)!.seen ? 0 : 1), 0)
+      const base = nodeData.get(baseId)
+      if (!base) throw new Error(`nodeData missing entry for ${String(baseId)}`)
+      const unseenCount = comp.reduce(
+        (n, id) => n + (nodeData.get(id)?.seen === false ? 1 : 0),
+        0,
+      )
       return {
         baseId: String(baseId),
         title: base.title,
