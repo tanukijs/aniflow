@@ -23,13 +23,13 @@ import {
   MediaStatus,
 } from './graphql'
 
-type Visibility = {
+interface Visibility {
   relation: MediaRelation[]
   format: MediaFormat[]
   status: MediaStatus[]
 }
 
-type AnimeNodeData = {
+interface AnimeNodeData {
   title: string
   cover?: string
   coverColor?: string
@@ -45,7 +45,9 @@ const query = gql`
   query ($username: String, $status: MediaListStatus) {
     MediaListCollection(userName: $username, type: ANIME, status: $status, sort: SCORE_DESC) {
       hasNextChunk
-      user { id }
+      user {
+        id
+      }
       lists {
         name
         isCustomList
@@ -54,25 +56,43 @@ const query = gql`
         entries {
           media {
             id
-            title { userPreferred }
+            title {
+              userPreferred
+            }
             type
             status
             format
             siteUrl
-            startDate { year month day }
-            coverImage { medium color }
+            startDate {
+              year
+              month
+              day
+            }
+            coverImage {
+              medium
+              color
+            }
             relations {
               edges {
                 relationType
                 node {
                   id
-                  title { userPreferred }
+                  title {
+                    userPreferred
+                  }
                   type
                   status
                   format
                   siteUrl
-                  startDate { year month day }
-                  coverImage { medium color }
+                  startDate {
+                    year
+                    month
+                    day
+                  }
+                  coverImage {
+                    medium
+                    color
+                  }
                 }
               }
             }
@@ -83,9 +103,9 @@ const query = gql`
   }
 `
 
-type FuzzyDate = { year?: number | null; month?: number | null; day?: number | null }
+interface FuzzyDate { year?: number | null; month?: number | null; day?: number | null }
 
-type ExpandedMedia = {
+interface ExpandedMedia {
   id: number
   title?: { userPreferred?: string | null } | null
   status?: MediaStatus | null
@@ -93,7 +113,7 @@ type ExpandedMedia = {
   siteUrl?: string | null
   startDate?: FuzzyDate | null
   coverImage?: { medium?: string | null; color?: string | null } | null
-  relations?: { edges?: Array<MediaEdge | null> | null } | null
+  relations?: { edges?: (MediaEdge | null)[] | null } | null
 }
 
 const dateOrder = (d?: FuzzyDate | null) => {
@@ -109,24 +129,42 @@ const pageQuery = gql`
     Page(perPage: 50) {
       media(id_in: $ids, type: ANIME) {
         id
-        title { userPreferred }
+        title {
+          userPreferred
+        }
         status
         format
         siteUrl
-        startDate { year month day }
-        coverImage { medium color }
+        startDate {
+          year
+          month
+          day
+        }
+        coverImage {
+          medium
+          color
+        }
         relations {
           edges {
             relationType
             node {
               id
-              title { userPreferred }
+              title {
+                userPreferred
+              }
               type
               status
               format
               siteUrl
-              startDate { year month day }
-              coverImage { medium color }
+              startDate {
+                year
+                month
+                day
+              }
+              coverImage {
+                medium
+                color
+              }
             }
           }
         }
@@ -135,7 +173,7 @@ const pageQuery = gql`
   }
 `
 
-type ExpansionProgress = {
+interface ExpansionProgress {
   extras: Map<number, ExpandedMedia>
   done: number
   total: number
@@ -184,7 +222,7 @@ async function expandUnseenRelations(
   }
 
   const report = () =>
-    onProgress({ extras: new Map(extras), done: extras.size, total: queued.size })
+    { onProgress({ extras: new Map(extras), done: extras.size, total: queued.size }); }
 
   report()
 
@@ -194,11 +232,11 @@ async function expandUnseenRelations(
       const batch = frontier.slice(i, i + 50)
       let res: { Page: { media: ExpandedMedia[] | null } } | null = null
       try {
-        res = (await request({
+        res = await request<{ Page: { media: ExpandedMedia[] | null } }>({
           url: endpoint,
           document: pageQuery,
           variables: { ids: batch },
-        })) as { Page: { media: ExpandedMedia[] | null } }
+        })
       } catch (err) {
         console.error('expansion batch failed', err)
         for (const id of batch) extras.set(id, { id })
@@ -243,7 +281,11 @@ function AnimeNode({ data }: NodeProps<AnimeNodeData>) {
       }`}
     >
       <Handle type="target" position={Position.Left} className="!bg-slate-400" />
-      <CoverImage cover={data.cover} color={data.coverColor} className="aspect-[2/3] h-full flex-shrink-0" />
+      <CoverImage
+        cover={data.cover}
+        color={data.coverColor}
+        className="aspect-[2/3] h-full flex-shrink-0"
+      />
 
       <div className="flex min-w-0 flex-1 flex-col gap-1.5 p-2">
         <a
@@ -257,9 +299,7 @@ function AnimeNode({ data }: NodeProps<AnimeNodeData>) {
         </a>
         <div className="mt-auto flex flex-wrap gap-1 text-[10px] font-medium">
           {!data.seen && (
-            <span className="rounded-full bg-rose-500 px-1.5 py-0.5 text-white">
-              Pas vu
-            </span>
+            <span className="rounded-full bg-rose-500 px-1.5 py-0.5 text-white">Pas vu</span>
           )}
           {data.format && (
             <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-slate-600">
@@ -299,10 +339,10 @@ function CoverImage({
           alt=""
           loading="lazy"
           decoding="async"
-          onLoad={() => setLoaded(true)}
+          onLoad={() => { setLoaded(true); }}
           className={
             'h-full w-full object-cover transition duration-500 ' +
-            (loaded ? 'scale-100 blur-0 opacity-100' : 'scale-110 blur-md opacity-0')
+            (loaded ? 'scale-100 opacity-100 blur-0' : 'scale-110 opacity-0 blur-md')
           }
         />
       )}
@@ -313,9 +353,7 @@ function CoverImage({
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="space-y-2">
-      <h2 className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-        {title}
-      </h2>
+      <h2 className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">{title}</h2>
       {children}
     </section>
   )
@@ -338,7 +376,7 @@ function ChipGroup<T extends string>({
           <button
             key={v}
             type="button"
-            onClick={() => onToggle(v)}
+            onClick={() => { onToggle(v); }}
             className={
               'rounded-full px-2 py-0.5 text-[11px] font-medium transition-colors ' +
               (isOn
@@ -369,7 +407,7 @@ function SegmentedGroup<T extends string>({
         <button
           key={v}
           type="button"
-          onClick={() => onChange(v)}
+          onClick={() => { onChange(v); }}
           className={
             'rounded-full px-2 py-0.5 text-[11px] font-medium transition-colors ' +
             (selected === v
@@ -386,7 +424,7 @@ function SegmentedGroup<T extends string>({
 
 const nodeTypes = { anime: AnimeNode }
 
-type MediaWithRelations = {
+interface MediaWithRelations {
   id: number
   title?: { userPreferred?: string | null } | null
   coverImage?: { medium?: string | null; color?: string | null } | null
@@ -394,10 +432,10 @@ type MediaWithRelations = {
   format?: MediaFormat | null
   status?: MediaStatus | null
   startDate?: FuzzyDate | null
-  relations?: { edges?: Array<MediaEdge | null> | null } | null
+  relations?: { edges?: (MediaEdge | null)[] | null } | null
 }
 
-type Franchise = {
+interface Franchise {
   baseId: string
   title: string
   cover?: string
@@ -417,7 +455,7 @@ const FORMAT_BASE_RANK: Partial<Record<MediaFormat, number>> = {
   [MediaFormat.Special]: 4,
   [MediaFormat.Music]: 5,
 }
-const rankFormat = (f?: MediaFormat | null) => (f ? FORMAT_BASE_RANK[f] ?? 99 : 99)
+const rankFormat = (f?: MediaFormat | null) => (f ? (FORMAT_BASE_RANK[f] ?? 99) : 99)
 
 function buildGraph(
   collection: MediaListCollection,
@@ -431,12 +469,16 @@ function buildGraph(
   const edgeKeys = new Set<string>()
 
   const isVisibleMedia = (m: { format?: MediaFormat | null; status?: MediaStatus | null }) =>
-    !!m.format && visibility.format.includes(m.format) &&
-    !!m.status && visibility.status.includes(m.status)
+    !!m.format &&
+    visibility.format.includes(m.format) &&
+    !!m.status &&
+    visibility.status.includes(m.status)
 
   const isVisibleEdge = (e: MediaEdge) =>
-    !!e.relationType && visibility.relation.includes(e.relationType) &&
-    !!e.node && isVisibleMedia(e.node)
+    !!e.relationType &&
+    visibility.relation.includes(e.relationType) &&
+    !!e.node &&
+    isVisibleMedia(e.node)
 
   const addNode = (m: MediaWithRelations) => {
     if (!isVisibleMedia(m)) return
@@ -465,7 +507,7 @@ function buildGraph(
   const mediaById = new Map<number, MediaWithRelations>()
   for (const list of collection.lists ?? []) {
     for (const entry of (list?.entries ?? []) as MediaList[]) {
-      if (entry?.media) mediaById.set(entry.media.id, entry.media as MediaWithRelations)
+      if (entry?.media) mediaById.set(entry.media.id, entry.media)
     }
   }
   for (const m of extraMedia.values()) {
@@ -475,7 +517,7 @@ function buildGraph(
   // Seed nodes with the user's collection entries.
   for (const list of collection.lists ?? []) {
     for (const entry of (list?.entries ?? []) as MediaList[]) {
-      if (entry?.media) addNode(entry.media as MediaWithRelations)
+      if (entry?.media) addNode(entry.media)
     }
   }
 
@@ -492,10 +534,10 @@ function buildGraph(
     addNode(m)
     allBases.push(m)
     for (const edge of m.relations?.edges ?? []) {
-      if (!edge || !edge.node || !edge.relationType) continue
+      if (!edge?.node || !edge.relationType) continue
       if (!isVisibleEdge(edge)) continue
       const t = edge.node
-      addNode(t as MediaWithRelations)
+      addNode(t)
       if (!nodeData.has(t.id)) continue
       if (visitedForBfs.has(t.id)) continue
       visitedForBfs.add(t.id)
@@ -523,10 +565,10 @@ function buildGraph(
   for (const m of allBases) {
     if (!nodeData.has(m.id)) continue
     for (const edge of m.relations?.edges ?? []) {
-      if (!edge || !edge.node || !edge.relationType) continue
+      if (!edge?.node || !edge.relationType) continue
       if (!isVisibleEdge(edge)) continue
       const target = edge.node
-      if (!nodeData.has(target.id)) addNode(target as MediaWithRelations)
+      if (!nodeData.has(target.id)) addNode(target)
       if (!nodeData.has(target.id)) continue
 
       // Direction encodes chronology: source = older, target = newer.
@@ -554,17 +596,14 @@ function buildGraph(
       // edge has been flipped, so from the source's POV the target IS the
       // sequel — relabel for visual consistency (no more "PREQUEL" labels).
       const displayRelation =
-        edge.relationType === MediaRelation.Prequel
-          ? MediaRelation.Sequel
-          : edge.relationType
+        edge.relationType === MediaRelation.Prequel ? MediaRelation.Sequel : edge.relationType
       edges.push({
         id: key,
         source: String(from),
         target: String(to),
         label: displayRelation,
         animated:
-          edge.relationType === MediaRelation.Prequel ||
-          edge.relationType === MediaRelation.Sequel,
+          edge.relationType === MediaRelation.Prequel || edge.relationType === MediaRelation.Sequel,
       })
     }
   }
@@ -606,17 +645,13 @@ function buildGraph(
   // in to declutter "completed" chains given their current filters.
   let activeComponents = components
   if (hideCompleteFranchises) {
-    activeComponents = components.filter((comp) =>
-      comp.some((id) => !nodeData.get(id)!.seen),
-    )
+    activeComponents = components.filter((comp) => comp.some((id) => !nodeData.get(id)!.seen))
     const keptIds = new Set<number>()
     for (const comp of activeComponents) for (const id of comp) keptIds.add(id)
     for (const id of [...nodeData.keys()]) {
       if (!keptIds.has(id)) nodeData.delete(id)
     }
-    const kept = edges.filter(
-      (e) => keptIds.has(Number(e.source)) && keptIds.has(Number(e.target)),
-    )
+    const kept = edges.filter((e) => keptIds.has(Number(e.source)) && keptIds.has(Number(e.target)))
     edges.length = 0
     edges.push(...kept)
   }
@@ -713,10 +748,7 @@ function buildGraph(
         return da.title.localeCompare(db.title)
       })[0]
       const base = nodeData.get(baseId)!
-      const unseenCount = comp.reduce(
-        (n, id) => n + (nodeData.get(id)!.seen ? 0 : 1),
-        0,
-      )
+      const unseenCount = comp.reduce((n, id) => n + (nodeData.get(id)!.seen ? 0 : 1), 0)
       return {
         baseId: String(baseId),
         title: base.title,
@@ -731,8 +763,7 @@ function buildGraph(
   return { nodes, edges, franchises }
 }
 
-const cacheKeyFor = (username: string, status: MediaListStatus) =>
-  `items_v2:${username}:${status}`
+const cacheKeyFor = (username: string, status: MediaListStatus) => `items_v2:${username}:${status}`
 
 export default function App() {
   const [username, setUsername] = useState(
@@ -765,7 +796,7 @@ export default function App() {
         if (cached) {
           const parsed = JSON.parse(cached) as {
             collection: MediaListCollection
-            extras: Array<[number, ExpandedMedia]>
+            extras: [number, ExpandedMedia][]
           }
           setCollection(parsed.collection)
           setExtraMedia(new Map(parsed.extras ?? []))
@@ -777,11 +808,11 @@ export default function App() {
       setProgress({ done: 0, total: 0 })
       setExtraMedia(new Map())
       try {
-        const res = (await request({
+        const res = await request<{ MediaListCollection: MediaListCollection }>({
           url: endpoint,
           document: query,
           variables: { username, status: listStatus },
-        })) as { MediaListCollection: MediaListCollection }
+        })
         const fresh = res.MediaListCollection
         setCollection(fresh)
 
@@ -800,16 +831,11 @@ export default function App() {
         }
 
         writeCache(new Map())
-        await expandUnseenRelations(
-          fresh,
-          sids,
-          visibility,
-          ({ extras, done, total }) => {
-            setExtraMedia(extras)
-            setProgress({ done, total })
-            writeCache(extras)
-          },
-        )
+        await expandUnseenRelations(fresh, sids, visibility, ({ extras, done, total }) => {
+          setExtraMedia(extras)
+          setProgress({ done, total })
+          writeCache(extras)
+        })
       } finally {
         setLoading(false)
       }
@@ -846,7 +872,7 @@ export default function App() {
     const id = requestAnimationFrame(() => {
       flowRef.current?.fitView({ maxZoom: 1.5, padding: 0.2, duration: 300 })
     })
-    return () => cancelAnimationFrame(id)
+    return () => { cancelAnimationFrame(id); }
   }, [nodes])
 
   return (
@@ -856,9 +882,7 @@ export default function App() {
           <h1 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
             AniList graph
           </h1>
-          <p className="text-xs text-slate-400">
-            Chronologie des séquelles dans ta liste.
-          </p>
+          <p className="text-xs text-slate-400">Chronologie des séquelles dans ta liste.</p>
         </header>
 
         <div className="flex gap-2">
@@ -913,7 +937,7 @@ export default function App() {
             type="text"
             className="w-full rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-sm shadow-sm placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={(e) => { setUsername(e.target.value); }}
             placeholder="ex: username"
           />
         </Section>
@@ -930,9 +954,7 @@ export default function App() {
           <ChipGroup
             values={ALL_RELATIONS}
             selected={visibility.relation}
-            onToggle={(r) =>
-              setVisibility((v) => ({ ...v, relation: toggle(v.relation, r) }))
-            }
+            onToggle={(r) => { setVisibility((v) => ({ ...v, relation: toggle(v.relation, r) })); }}
           />
         </Section>
 
@@ -940,9 +962,7 @@ export default function App() {
           <ChipGroup
             values={ALL_FORMATS}
             selected={visibility.format}
-            onToggle={(f) =>
-              setVisibility((v) => ({ ...v, format: toggle(v.format, f) }))
-            }
+            onToggle={(f) => { setVisibility((v) => ({ ...v, format: toggle(v.format, f) })); }}
           />
         </Section>
 
@@ -950,16 +970,14 @@ export default function App() {
           <ChipGroup
             values={ALL_STATUSES}
             selected={visibility.status}
-            onToggle={(s) =>
-              setVisibility((v) => ({ ...v, status: toggle(v.status, s) }))
-            }
+            onToggle={(s) => { setVisibility((v) => ({ ...v, status: toggle(v.status, s) })); }}
           />
         </Section>
 
         <Section title="Affichage">
           <button
             type="button"
-            onClick={() => setHideCompleteFranchises((v) => !v)}
+            onClick={() => { setHideCompleteFranchises((v) => !v); }}
             className={
               'rounded-full px-2 py-0.5 text-[11px] font-medium transition-colors ' +
               (hideCompleteFranchises
@@ -1003,7 +1021,7 @@ export default function App() {
             <li key={f.baseId}>
               <button
                 type="button"
-                onClick={() => focusNode(f.baseId)}
+                onClick={() => { focusNode(f.baseId); }}
                 className="flex w-full items-center gap-2 border-b border-slate-100 px-4 py-2 text-left text-xs hover:bg-slate-50"
               >
                 <CoverImage

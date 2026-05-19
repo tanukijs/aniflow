@@ -1,6 +1,6 @@
 overwrite: true
-schema: "https://graphql.anilist.co/"
+schema: 'https://graphql.anilist.co/'
 generates:
   src/graphql.ts:
     plugins:
-      - "typescript"
+      - 'typescript'
