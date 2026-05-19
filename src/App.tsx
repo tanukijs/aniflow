@@ -22,6 +22,15 @@ import {
   MediaRelation,
   MediaStatus,
 } from './graphql'
+import {
+  ALL_FORMATS,
+  ALL_LIST_STATUSES,
+  ALL_RELATIONS,
+  ALL_STATUSES,
+  NODE_HEIGHT,
+  NODE_WIDTH,
+  toggle,
+} from './lib/constants'
 import type {
   AnimeFlowNode,
   AnimeNodeData,
@@ -244,18 +253,6 @@ async function expandUnseenRelations(
   }
 
   return extras
-}
-
-const NODE_WIDTH = 240
-const NODE_HEIGHT = 124
-
-const ALL_RELATIONS = Object.values(MediaRelation)
-const ALL_FORMATS = Object.values(MediaFormat)
-const ALL_STATUSES = Object.values(MediaStatus)
-const ALL_LIST_STATUSES = Object.values(MediaListStatus)
-
-function toggle<T>(arr: T[], value: T): T[] {
-  return arr.includes(value) ? arr.filter((v) => v !== value) : [...arr, value]
 }
 
 function AnimeNode({ data }: NodeProps<AnimeFlowNode>) {
