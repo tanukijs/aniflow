@@ -16,7 +16,7 @@
     "generate": "graphql-codegen --config codegen.yml"
   },
   "dependencies": {
-    "@dagrejs/dagre": "^1.1.4",
+    "@dagrejs/dagre": "^3.0.0",
     "graphql": "^16.14.0",
     "graphql-request": "^7.4.0",
     "react": "^19.2.6",

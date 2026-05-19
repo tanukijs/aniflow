@@ -1,4 +1,4 @@
-import dagre from '@dagrejs/dagre'
+import dagre, { type NodeConfig } from '@dagrejs/dagre'
 import { gql, request } from 'graphql-request'
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import ReactFlow, {
@@ -672,6 +672,13 @@ function buildGraph(
   const componentGap = NODE_HEIGHT + 16
   const nodePositions = new Map<number, { x: number; y: number }>()
 
+  // After dagre.layout() each node is annotated with x/y; before layout only
+  // width/height are set, hence both are optional in the read-side type.
+  interface DagreNode extends NodeConfig {
+    x?: number
+    y?: number
+  }
+
   let cursorY = 0
   for (const comp of activeComponents) {
     const cg = new dagre.graphlib.Graph()
@@ -690,6 +697,10 @@ function buildGraph(
       const t = Number(e.target)
       if (inComp.has(s) && inComp.has(t)) cg.setEdge(String(s), String(t))
     }
+    // dagre.layout's parameter is typed as graphlib.Graph with default
+    // generics, which typescript-eslint flags as unsafe regardless of how cg
+    // is typed; the runtime contract is the standard dagre handshake.
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     dagre.layout(cg)
 
     // Use dagre's natural layout within the franchise: a linear chain stays
@@ -698,13 +709,15 @@ function buildGraph(
     let minY = Infinity
     let maxY = -Infinity
     for (const id of comp) {
-      const n = cg.node(String(id))
+      const n = cg.node(String(id)) as DagreNode
+      if (n.y === undefined) continue
       if (n.y - NODE_HEIGHT / 2 < minY) minY = n.y - NODE_HEIGHT / 2
       if (n.y + NODE_HEIGHT / 2 > maxY) maxY = n.y + NODE_HEIGHT / 2
     }
     const offsetY = cursorY - minY
     for (const id of comp) {
-      const n = cg.node(String(id))
+      const n = cg.node(String(id)) as DagreNode
+      if (n.x === undefined || n.y === undefined) continue
       nodePositions.set(id, {
         x: n.x - NODE_WIDTH / 2,
         y: n.y - NODE_HEIGHT / 2 + offsetY,
