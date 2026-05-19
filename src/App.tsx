@@ -196,7 +196,12 @@ async function expandUnseenRelations(
   // Strict matching: relation, format AND status must all be in the user's
   // selection. Anime with a missing/unknown format or status are rejected so
   // expansion never fetches anything the display would hide anyway.
-  const acceptEdge = (edge: MediaEdge | null | undefined) => {
+  const acceptEdge = (
+    edge: MediaEdge | null | undefined,
+  ): edge is MediaEdge & {
+    node: NonNullable<MediaEdge['node']>
+    relationType: NonNullable<MediaEdge['relationType']>
+  } => {
     if (!edge?.node || !edge.relationType) return false
     if (!visibility.relation.includes(edge.relationType)) return false
     const n = edge.node
@@ -207,7 +212,7 @@ async function expandUnseenRelations(
 
   const queueFromEdge = (edge: MediaEdge | null | undefined) => {
     if (!acceptEdge(edge)) return
-    const id = edge!.node!.id
+    const id = edge.node.id
     if (seenIds.has(id) || queued.has(id)) return
     queued.add(id)
     frontier.push(id)
@@ -247,7 +252,7 @@ async function expandUnseenRelations(
         extras.set(m.id, m)
         for (const edge of m.relations?.edges ?? []) {
           if (!acceptEdge(edge)) continue
-          const id = edge!.node!.id
+          const id = edge.node.id
           if (seenIds.has(id) || queued.has(id)) continue
           queued.add(id)
           next.push(id)
