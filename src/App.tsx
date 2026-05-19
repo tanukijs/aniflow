@@ -490,7 +490,7 @@ function buildGraph(
       return
     }
     nodeData.set(m.id, {
-      title: m.title?.userPreferred ?? `#${m.id}`,
+      title: m.title?.userPreferred ?? `#${String(m.id)}`,
       cover: m.coverImage?.medium ?? undefined,
       coverColor: m.coverImage?.color ?? undefined,
       siteUrl: m.siteUrl ?? undefined,
@@ -589,7 +589,7 @@ function buildGraph(
       }
       const a = Math.min(from, to)
       const b = Math.max(from, to)
-      const key = `${a}-${b}:${edge.relationType}`
+      const key = `${String(a)}-${String(b)}:${edge.relationType}`
       if (edgeKeys.has(key)) continue
       edgeKeys.add(key)
       // We always flip edges so source = older, target = newer. A PREQUEL
@@ -911,7 +911,7 @@ export default function App() {
               <span>
                 {progress.total === 0
                   ? 'Chargement de la collection…'
-                  : `Expansion : ${progress.done} / ${progress.total}`}
+                  : `Expansion : ${String(progress.done)} / ${String(progress.total)}`}
               </span>
               {progress.total > 0 && (
                 <span className="tabular-nums">
@@ -925,7 +925,7 @@ export default function App() {
               ) : (
                 <div
                   className="h-full rounded-full bg-blue-500 transition-[width] duration-200"
-                  style={{ width: `${(progress.done / progress.total) * 100}%` }}
+                  style={{ width: `${String((progress.done / progress.total) * 100)}%` }}
                 />
               )}
             </div>
@@ -1039,7 +1039,7 @@ export default function App() {
                 {f.unseenCount > 0 && (
                   <span
                     className="flex-shrink-0 rounded-full bg-rose-100 px-1.5 py-0.5 text-[10px] font-medium text-rose-600"
-                    title={`${f.unseenCount} non vu${f.unseenCount > 1 ? 's' : ''}`}
+                    title={`${String(f.unseenCount)} non vu${f.unseenCount > 1 ? 's' : ''}`}
                   >
                     {f.unseenCount}
                   </span>
