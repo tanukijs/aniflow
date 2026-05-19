@@ -9,7 +9,6 @@ import {
   Position,
   ReactFlow,
   type Edge,
-  type Node,
   type NodeProps,
   type ReactFlowInstance,
 } from '@xyflow/react'
@@ -23,24 +22,15 @@ import {
   MediaRelation,
   MediaStatus,
 } from './graphql'
-
-interface Visibility {
-  relation: MediaRelation[]
-  format: MediaFormat[]
-  status: MediaStatus[]
-}
-
-type AnimeNodeData = {
-  title: string
-  cover?: string
-  coverColor?: string
-  siteUrl?: string
-  format?: MediaFormat | null
-  status?: MediaStatus | null
-  seen: boolean
-} & Record<string, unknown>
-
-type AnimeFlowNode = Node<AnimeNodeData, 'anime'>
+import type {
+  AnimeFlowNode,
+  AnimeNodeData,
+  ExpandedMedia,
+  Franchise,
+  FuzzyDate,
+  MediaWithRelations,
+  Visibility,
+} from './types'
 
 const endpoint = 'https://graphql.anilist.co'
 
@@ -105,19 +95,6 @@ const query = gql`
     }
   }
 `
-
-interface FuzzyDate { year?: number | null; month?: number | null; day?: number | null }
-
-interface ExpandedMedia {
-  id: number
-  title?: { userPreferred?: string | null } | null
-  status?: MediaStatus | null
-  format?: MediaFormat | null
-  siteUrl?: string | null
-  startDate?: FuzzyDate | null
-  coverImage?: { medium?: string | null; color?: string | null } | null
-  relations?: { edges?: (MediaEdge | null)[] | null } | null
-}
 
 const dateOrder = (d?: FuzzyDate | null) => {
   if (!d?.year) return Number.POSITIVE_INFINITY
@@ -431,26 +408,6 @@ function SegmentedGroup<T extends string>({
 }
 
 const nodeTypes = { anime: AnimeNode }
-
-interface MediaWithRelations {
-  id: number
-  title?: { userPreferred?: string | null } | null
-  coverImage?: { medium?: string | null; color?: string | null } | null
-  siteUrl?: string | null
-  format?: MediaFormat | null
-  status?: MediaStatus | null
-  startDate?: FuzzyDate | null
-  relations?: { edges?: (MediaEdge | null)[] | null } | null
-}
-
-interface Franchise {
-  baseId: string
-  title: string
-  cover?: string
-  coverColor?: string
-  unseenCount: number
-  hasUnseen: boolean
-}
 
 // Rank used to pick the canonical "base" anime of a franchise. TV series are
 // considered the main entry; movies/OVAs/specials are derivatives.
