@@ -215,7 +215,7 @@ async function expandUnseenRelations(
 
   for (const list of collection.lists ?? []) {
     for (const entry of (list?.entries ?? []) as MediaList[]) {
-      for (const edge of entry?.media?.relations?.edges ?? []) {
+      for (const edge of entry.media?.relations?.edges ?? []) {
         queueFromEdge(edge)
       }
     }
@@ -507,7 +507,7 @@ function buildGraph(
   const mediaById = new Map<number, MediaWithRelations>()
   for (const list of collection.lists ?? []) {
     for (const entry of (list?.entries ?? []) as MediaList[]) {
-      if (entry?.media) mediaById.set(entry.media.id, entry.media)
+      if (entry.media) mediaById.set(entry.media.id, entry.media)
     }
   }
   for (const m of extraMedia.values()) {
@@ -517,7 +517,7 @@ function buildGraph(
   // Seed nodes with the user's collection entries.
   for (const list of collection.lists ?? []) {
     for (const entry of (list?.entries ?? []) as MediaList[]) {
-      if (entry?.media) addNode(entry.media)
+      if (entry.media) addNode(entry.media)
     }
   }
 
@@ -799,7 +799,7 @@ export default function App() {
             extras: [number, ExpandedMedia][]
           }
           setCollection(parsed.collection)
-          setExtraMedia(new Map(parsed.extras ?? []))
+          setExtraMedia(new Map(parsed.extras))
           return
         }
       }
@@ -819,7 +819,7 @@ export default function App() {
         const sids = new Set<number>()
         for (const list of fresh.lists ?? []) {
           for (const entry of (list?.entries ?? []) as MediaList[]) {
-            if (entry?.media?.id !== undefined) sids.add(entry.media.id)
+            if (entry.media?.id !== undefined) sids.add(entry.media.id)
           }
         }
 
@@ -847,7 +847,7 @@ export default function App() {
     const ids = new Set<number>()
     for (const list of collection?.lists ?? []) {
       for (const entry of (list?.entries ?? []) as MediaList[]) {
-        if (entry?.media?.id !== undefined) ids.add(entry.media.id)
+        if (entry.media?.id !== undefined) ids.add(entry.media.id)
       }
     }
     return ids
