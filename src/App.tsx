@@ -238,7 +238,7 @@ async function expandUnseenRelations(
     const next: number[] = []
     for (let i = 0; i < frontier.length; i += 50) {
       const batch = frontier.slice(i, i + 50)
-      let res: { Page: { media: ExpandedMedia[] | null } } | null = null
+      let res: { Page: { media: ExpandedMedia[] | null } } | null
       try {
         res = await request<{ Page: { media: ExpandedMedia[] | null } }>({
           url: endpoint,
@@ -806,7 +806,9 @@ export default function App() {
   const [listStatus, setListStatus] = useState<MediaListStatus>(MediaListStatus.Completed)
   const [hideCompleteFranchises, setHideCompleteFranchises] = useState(true)
   const [collection, setCollection] = useState<MediaListCollection | null>(null)
-  const [extraMedia, setExtraMedia] = useState<Map<number, ExpandedMedia>>(new Map())
+  const [extraMedia, setExtraMedia] = useState<Map<number, ExpandedMedia>>(
+    () => new Map(),
+  )
   const [loading, setLoading] = useState(false)
   const [progress, setProgress] = useState<{ done: number; total: number }>({ done: 0, total: 0 })
   const [visibility, setVisibility] = useState<Visibility>({
