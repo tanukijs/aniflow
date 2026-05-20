@@ -2219,6 +2219,41 @@ __metadata:
   languageName: node
   linkType: hard
 
+"aniflow@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "aniflow@workspace:."
+  dependencies:
+    "@dagrejs/dagre": "npm:^3.0.0"
+    "@eslint-react/eslint-plugin": "npm:^5.8.2"
+    "@eslint/js": "npm:^10.0.1"
+    "@graphql-codegen/cli": "npm:^7.0.0"
+    "@graphql-codegen/typescript": "npm:^6.0.1"
+    "@tailwindcss/vite": "npm:^4.1.0"
+    "@tsconfig/node20": "npm:^20.1.9"
+    "@types/node": "npm:^20.19.41"
+    "@types/react": "npm:^19.2.15"
+    "@types/react-dom": "npm:^19.2.3"
+    "@vitejs/plugin-react": "npm:^6.0.2"
+    "@xyflow/react": "npm:^12.0.0"
+    eslint: "npm:^10.4.0"
+    eslint-config-prettier: "npm:^10.0.0"
+    eslint-plugin-react-hooks: "npm:^7.1.1"
+    eslint-plugin-react-refresh: "npm:^0.5.2"
+    globals: "npm:^17.6.0"
+    graphql: "npm:^16.14.0"
+    graphql-request: "npm:^7.4.0"
+    npm-run-all2: "npm:^9.0.0"
+    prettier: "npm:^3.8.3"
+    prettier-plugin-tailwindcss: "npm:^0.8.0"
+    react: "npm:^19.2.6"
+    react-dom: "npm:^19.2.6"
+    tailwindcss: "npm:^4.1.0"
+    typescript: "npm:^6.0.3"
+    typescript-eslint: "npm:^8.59.4"
+    vite: "npm:^8.0.13"
+  languageName: unknown
+  linkType: soft
+
 "ansi-escapes@npm:^7.0.0":
   version: 7.3.0
   resolution: "ansi-escapes@npm:7.3.0"
@@ -4702,41 +4737,6 @@ __metadata:
   checksum: 10c0/dbf2aef67857c03a612bc9316a4562e5066f43fa04bf28f7f0734963fc1350da2c9f8eb973930655453281079f30cc8222bab383dbec4b5097084e2c081e3334
   languageName: node
   linkType: hard
-
-"react-project@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "react-project@workspace:."
-  dependencies:
-    "@dagrejs/dagre": "npm:^3.0.0"
-    "@eslint-react/eslint-plugin": "npm:^5.8.2"
-    "@eslint/js": "npm:^10.0.1"
-    "@graphql-codegen/cli": "npm:^7.0.0"
-    "@graphql-codegen/typescript": "npm:^6.0.1"
-    "@tailwindcss/vite": "npm:^4.1.0"
-    "@tsconfig/node20": "npm:^20.1.9"
-    "@types/node": "npm:^20.19.41"
-    "@types/react": "npm:^19.2.15"
-    "@types/react-dom": "npm:^19.2.3"
-    "@vitejs/plugin-react": "npm:^6.0.2"
-    "@xyflow/react": "npm:^12.0.0"
-    eslint: "npm:^10.4.0"
-    eslint-config-prettier: "npm:^10.0.0"
-    eslint-plugin-react-hooks: "npm:^7.1.1"
-    eslint-plugin-react-refresh: "npm:^0.5.2"
-    globals: "npm:^17.6.0"
-    graphql: "npm:^16.14.0"
-    graphql-request: "npm:^7.4.0"
-    npm-run-all2: "npm:^9.0.0"
-    prettier: "npm:^3.8.3"
-    prettier-plugin-tailwindcss: "npm:^0.8.0"
-    react: "npm:^19.2.6"
-    react-dom: "npm:^19.2.6"
-    tailwindcss: "npm:^4.1.0"
-    typescript: "npm:^6.0.3"
-    typescript-eslint: "npm:^8.59.4"
-    vite: "npm:^8.0.13"
-  languageName: unknown
-  linkType: soft
 
 "react@npm:^19.2.6":
   version: 19.2.6
