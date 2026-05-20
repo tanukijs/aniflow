@@ -7,6 +7,10 @@ is laid out chronologically from left to right.
 The app talks to the public [AniList GraphQL API](https://graphql.anilist.co)
 directly from the browser — no backend, no authentication.
 
+[**Live demo →**](https://tanukijs.github.io/aniflow/)
+
+![aniflow screenshot](./.github/screenshot.png)
+
 ## Features
 
 - **Load any public list** by AniList username, filterable by list status
