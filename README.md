@@ -9,7 +9,7 @@ directly from the browser — no backend, no authentication.
 
 [**Live demo →**](https://tanukijs.github.io/aniflow/)
 
-![aniflow screenshot](./.github/screenshot.png)
+![aniflow screenshot](./docs/screenshot.png)
 
 ## Features
 
