@@ -54,8 +54,29 @@ export function collectGraph(
     !!e.node &&
     isVisibleMedia(e.node)
 
+  // Recap / compilation entries are flagged on AniList via a SUMMARY relation
+  // declared by the original (older) entry. They're redundant for gap-spotting,
+  // yet a later sequel sometimes mislabels them as PREQUEL/SEQUEL, which would
+  // otherwise drag them into the graph. Collect every SUMMARY target up front
+  // so addNode can veto them — unless the user has actually watched them.
+  const recapIds = new Set<number>()
+  const collectSummaries = (edges?: (MediaEdge | null)[] | null) => {
+    for (const e of edges ?? []) {
+      if (e?.relationType === MediaRelation.Summary && e.node) recapIds.add(e.node.id)
+    }
+  }
+  for (const list of collection.lists ?? []) {
+    for (const entry of (list?.entries ?? []) as MediaList[]) {
+      collectSummaries(entry.media?.relations?.edges)
+    }
+  }
+  for (const m of extraMedia.values()) {
+    collectSummaries(m.relations?.edges)
+  }
+
   const addNode = (m: MediaWithRelations) => {
     if (!isVisibleMedia(m)) return
+    if (!seenIds.has(m.id) && recapIds.has(m.id)) return
     const existing = nodeData.get(m.id)
     if (existing) {
       // Upgrade shallow entry once we have richer data.
