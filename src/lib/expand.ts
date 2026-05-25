@@ -1,6 +1,11 @@
 import { request } from 'graphql-request'
 
-import { type MediaEdge, type MediaList, type MediaListCollection } from '../graphql'
+import {
+  type MediaEdge,
+  type MediaList,
+  type MediaListCollection,
+  MediaRelation,
+} from '../graphql'
 import type { ExpandedMedia, Visibility } from '../types'
 import { endpoint, pageQuery } from './anilist'
 
@@ -21,6 +26,16 @@ export async function expandUnseenRelations(
   const queued = new Set<number>()
   let frontier: number[] = []
 
+  // Recap / compilation entries are flagged via a SUMMARY relation from the
+  // original entry. They're noise for gap-spotting, so never fetch them even
+  // when another relation (e.g. a sequel mislabeled as PREQUEL) points at them.
+  const summaryTargets = new Set<number>()
+  const harvestSummaries = (edges?: (MediaEdge | null)[] | null) => {
+    for (const e of edges ?? []) {
+      if (e?.relationType === MediaRelation.Summary && e.node) summaryTargets.add(e.node.id)
+    }
+  }
+
   // Only follow relations the user explicitly enabled, and only fetch targets
   // whose format/status the user wants to see. Shallow relation nodes carry
   // enough metadata (format/status) for us to gate here before fetching.
@@ -38,6 +53,7 @@ export async function expandUnseenRelations(
     const n = edge.node
     if (!n.format || !visibility.format.includes(n.format)) return false
     if (!n.status || !visibility.status.includes(n.status)) return false
+    if (summaryTargets.has(n.id)) return false
     return true
   }
 
@@ -49,6 +65,11 @@ export async function expandUnseenRelations(
     frontier.push(id)
   }
 
+  for (const list of collection.lists ?? []) {
+    for (const entry of (list?.entries ?? []) as MediaList[]) {
+      harvestSummaries(entry.media?.relations?.edges)
+    }
+  }
   for (const list of collection.lists ?? []) {
     for (const entry of (list?.entries ?? []) as MediaList[]) {
       for (const edge of entry.media?.relations?.edges ?? []) {
@@ -80,8 +101,12 @@ export async function expandUnseenRelations(
         report()
         continue
       }
-      for (const m of res.Page.media ?? []) {
+      const media = res.Page.media ?? []
+      for (const m of media) {
         extras.set(m.id, m)
+        harvestSummaries(m.relations?.edges)
+      }
+      for (const m of media) {
         for (const edge of m.relations?.edges ?? []) {
           if (!acceptEdge(edge)) continue
           const id = edge.node.id
